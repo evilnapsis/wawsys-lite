@@ -172,15 +172,15 @@
 
         <footer class="main-footer">
         <div class="pull-right hidden-xs">
-          <b>Version</b> 1.5
+          <b>Version</b> 1.6
         </div>
-        <strong>Copyright &copy; 2017 <a href="http://evilnapsis.com/" target="_blank">Evilnapsis</a></strong>
+        <strong>Copyright &copy; 2024 <a href="http://evilnapsis.com/" target="_blank">Evilnapsis</a></strong>
       </footer>
       <?php else:?>
         <?php if(isset($_GET["view"]) && $_GET["view"]=="clientaccess"):?>
 <div class="login-box">
       <div class="login-logo">
-        <a href="./">INVENTIO<b>MAX</b></a>
+        <a href="./">WAWSYS<b>LITE</b></a>
       </div><!-- /.login-logo -->
       <div class="login-box-body">
       <center><h4>Cliente</h4></center>
