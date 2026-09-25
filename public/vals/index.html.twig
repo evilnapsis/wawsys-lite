@@ -1,0 +1,98 @@
+{% extends "layouts/main.html.twig" %}
+{% block title %}Lecturas de Consumo{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-md-12">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1><i class="bi bi-card-checklist"></i> Control de Lecturas de Consumo</h1>
+      <a href="{{ base_url }}/val/new" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Registrar Nueva Lectura</a>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-header bg-light">
+        <strong>Listado de Tomas de Lectura</strong>
+      </div>
+      <div class="card-body p-0">
+        {% if readings|length > 0 %}
+          <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle mb-0 datatable">
+              <thead class="table-light">
+                <tr>
+                  <th style="width: 50px;">#</th>
+                  <th>Cliente</th>
+                  <th>Medidor</th>
+                  <th>Fecha</th>
+                  <th>Periodo</th>
+                  <th class="text-end">Lectura Ant.</th>
+                  <th class="text-end">Lectura Act.</th>
+                  <th class="text-center">Consumo Neto</th>
+                  <th class="text-center">Evidencia</th>
+                  <th>Lector</th>
+                  <th style="width: 110px;" class="text-end">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in readings %}
+                  {% set c = r.getClient() %}
+                  {% set m = r.getMeter() %}
+                  {% set u = r.getUser() %}
+                  <tr>
+                    <td>{{ r.id }}</td>
+                    <td>
+                      {% if c %}
+                        <a href="{{ base_url }}/client/{{ c.id }}" class="fw-bold text-decoration-none">
+                          {{ c.getFullName() }}
+                        </a>
+                      {% else %}
+                        <span class="text-muted">Cliente eliminado</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if m %}
+                        <span class="badge bg-light text-dark border font-monospace">{{ m.identifier }}</span>
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td><i class="bi bi-calendar-event me-1"></i>{{ r.date_at }}</td>
+                    <td><span class="badge bg-secondary font-monospace">{{ r.period }}</span></td>
+                    <td class="text-end text-muted font-monospace">{{ r.previous_val|number_format(2) }} m³</td>
+                    <td class="text-end fw-bold text-primary font-monospace">{{ r.val|number_format(2) }} m³</td>
+                    <td class="text-center">
+                      <span class="badge bg-success font-monospace fs-6">
+                        +{{ r.consumption|number_format(2) }} m³
+                      </span>
+                    </td>
+                    <td class="text-center">
+                      {% if r.image %}
+                        <a href="{{ r.image }}" target="_blank" class="btn btn-outline-info btn-sm" title="Ver Fotografía">
+                          <i class="bi bi-camera"></i>
+                        </a>
+                      {% else %}
+                        <span class="text-muted small">-</span>
+                      {% endif %}
+                    </td>
+                    <td class="small">{{ u ? u.name : 'Sistema' }}</td>
+                    <td class="text-end">
+                      <a href="{{ base_url }}/val/{{ r.id }}" class="btn btn-info btn-sm text-white" title="Ver Detalle"><i class="bi bi-eye"></i></a>
+                      <form action="{{ base_url }}/val/{{ r.id }}/delete" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar esta lectura?');">
+                        {{ csrf_field() }}
+                        <button type="submit" class="btn btn-danger btn-sm" title="Eliminar"><i class="bi bi-trash"></i></button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="p-4 text-center text-muted">
+            <i class="bi bi-card-checklist fs-3 d-block mb-2"></i>
+            No se han registrado lecturas en el sistema.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

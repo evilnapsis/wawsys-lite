@@ -1,0 +1,174 @@
+{% extends "layouts/main.html.twig" %}
+{% block title %}Inicio - Dashboard{% endblock %}
+{% block content %}
+<div class="row mb-4 align-items-center">
+	<div class="col-md-6">
+		<h1 class="mb-0"><i class="bi bi-droplet-half text-primary"></i> Control de Consumo de Agua</h1>
+		<div class="text-muted">Periodo de Facturación Actual: <strong>{{ current_period }}</strong></div>
+	</div>
+	<div class="col-md-6 text-md-end mt-3 mt-md-0">
+		<a href="{{ base_url }}/val/new" class="btn btn-primary me-2"><i class="bi bi-plus-circle"></i> Registrar Lectura</a>
+		<a href="{{ base_url }}/client/new" class="btn btn-outline-primary"><i class="bi bi-person-plus"></i> Nuevo Cliente</a>
+	</div>
+</div>
+
+<!-- Tarjetas de Métricas -->
+<div class="row g-3 mb-4">
+	<!-- Card Clientes -->
+	<div class="col-6 col-lg-3">
+		<a href="{{ base_url }}/clients" class="text-decoration-none text-dark">
+			<div class="card shadow-sm border-0 h-100" style="border-left: 4px solid #0d6efd !important;">
+				<div class="card-body p-4 d-flex align-items-center justify-content-between">
+					<div>
+						<div class="fs-2 fw-bold text-primary">{{ total_clients }}</div>
+						<div class="text-uppercase fw-bold text-muted small">Clientes Registrados</div>
+						<div class="small text-success mt-1"><i class="bi bi-check2-circle"></i> {{ active_clients }} activos</div>
+					</div>
+					<div class="text-primary opacity-50">
+						<i class="bi bi-people fs-1"></i>
+					</div>
+				</div>
+			</div>
+		</a>
+	</div>
+
+	<!-- Card Medidores -->
+	<div class="col-6 col-lg-3">
+		<a href="{{ base_url }}/meters" class="text-decoration-none text-dark">
+			<div class="card shadow-sm border-0 h-100" style="border-left: 4px solid #0dcaf0 !important;">
+				<div class="card-body p-4 d-flex align-items-center justify-content-between">
+					<div>
+						<div class="fs-2 fw-bold text-info">{{ total_meters }}</div>
+						<div class="text-uppercase fw-bold text-muted small">Medidores de Agua</div>
+						<div class="small text-muted mt-1">{{ active_meters }} activos / {{ maintenance_meters }} mant.</div>
+					</div>
+					<div class="text-info opacity-50">
+						<i class="bi bi-speedometer fs-1"></i>
+					</div>
+				</div>
+			</div>
+		</a>
+	</div>
+
+	<!-- Card Lecturas del Mes -->
+	<div class="col-6 col-lg-3">
+		<a href="{{ base_url }}/vals" class="text-decoration-none text-dark">
+			<div class="card shadow-sm border-0 h-100" style="border-left: 4px solid #198754 !important;">
+				<div class="card-body p-4 d-flex align-items-center justify-content-between">
+					<div>
+						<div class="fs-2 fw-bold text-success">{{ month_readings }}</div>
+						<div class="text-uppercase fw-bold text-muted small">Lecturas Este Mes</div>
+						<div class="small text-muted mt-1">Periodo {{ current_period }}</div>
+					</div>
+					<div class="text-success opacity-50">
+						<i class="bi bi-card-checklist fs-1"></i>
+					</div>
+				</div>
+			</div>
+		</a>
+	</div>
+
+	<!-- Card Consumo Acumulado Mes -->
+	<div class="col-6 col-lg-3">
+		<a href="{{ base_url }}/vals" class="text-decoration-none text-dark">
+			<div class="card shadow-sm border-0 h-100" style="border-left: 4px solid #ffc107 !important;">
+				<div class="card-body p-4 d-flex align-items-center justify-content-between">
+					<div>
+						<div class="fs-2 fw-bold text-warning font-monospace">{{ month_consumption|number_format(1) }} <span class="fs-6">m³</span></div>
+						<div class="text-uppercase fw-bold text-muted small">Consumo del Mes</div>
+						<div class="small text-muted mt-1">Total histórico: {{ total_consumption|number_format(1) }} m³</div>
+					</div>
+					<div class="text-warning opacity-50">
+						<i class="bi bi-water fs-1"></i>
+					</div>
+				</div>
+			</div>
+		</a>
+	</div>
+</div>
+
+<!-- Últimas Lecturas Registradas -->
+<div class="row">
+	<div class="col-md-12">
+		<div class="card shadow-sm border-0">
+			<div class="card-header bg-light d-flex justify-content-between align-items-center py-3">
+				<h5 class="card-title mb-0"><i class="bi bi-clock-history me-1"></i> Últimas Lecturas de Medidores</h5>
+				<a href="{{ base_url }}/vals" class="btn btn-outline-primary btn-sm">Ver Todas las Lecturas</a>
+			</div>
+			<div class="card-body p-0">
+				{% if recent_readings|length > 0 %}
+					<div class="table-responsive">
+						<table class="table table-hover table-striped align-middle mb-0">
+							<thead class="table-light">
+								<tr>
+									<th>#</th>
+									<th>Cliente</th>
+									<th>Medidor</th>
+									<th>Fecha</th>
+									<th>Periodo</th>
+									<th class="text-end">Lectura Anterior</th>
+									<th class="text-end">Lectura Actual</th>
+									<th class="text-center">Consumo Neto</th>
+									<th>Evidencia</th>
+									<th class="text-end">Acción</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for r in recent_readings %}
+									{% set c = r.getClient() %}
+									{% set m = r.getMeter() %}
+									<tr>
+										<td>{{ r.id }}</td>
+										<td>
+											{% if c %}
+												<a href="{{ base_url }}/client/{{ c.id }}" class="fw-bold text-decoration-none">
+													{{ c.getFullName() }}
+												</a>
+											{% else %}
+												<span class="text-muted">Cliente eliminado</span>
+											{% endif %}
+										</td>
+										<td>
+											{% if m %}
+												<span class="badge bg-light text-dark border font-monospace">{{ m.identifier }}</span>
+											{% else %}
+												<span class="text-muted">-</span>
+											{% endif %}
+										</td>
+										<td>{{ r.date_at }}</td>
+										<td><span class="badge bg-secondary font-monospace">{{ r.period }}</span></td>
+										<td class="text-end text-muted font-monospace">{{ r.previous_val|number_format(2) }} m³</td>
+										<td class="text-end fw-bold text-primary font-monospace">{{ r.val|number_format(2) }} m³</td>
+										<td class="text-center">
+											<span class="badge bg-success font-monospace">
+												+{{ r.consumption|number_format(2) }} m³
+											</span>
+										</td>
+										<td>
+											{% if r.image %}
+												<a href="{{ r.image }}" target="_blank" class="btn btn-outline-info btn-sm"><i class="bi bi-camera"></i></a>
+											{% else %}
+												<span class="text-muted small">-</span>
+											{% endif %}
+										</td>
+										<td class="text-end">
+											<a href="{{ base_url }}/val/{{ r.id }}" class="btn btn-info btn-sm text-white"><i class="bi bi-eye"></i></a>
+										</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				{% else %}
+					<div class="p-5 text-center text-muted">
+						<i class="bi bi-speedometer2 fs-1 d-block mb-3 text-secondary"></i>
+						<h5>Aún no hay lecturas registradas</h5>
+						<p class="mb-3">Comienza registrando clientes, asignándoles medidores y capturando las lecturas mensuales.</p>
+						<a href="{{ base_url }}/val/new" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Registrar Primera Lectura</a>
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

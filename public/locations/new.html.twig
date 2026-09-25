@@ -1,0 +1,46 @@
+{% extends "layouts/main.html.twig" %}
+{% block title %}Nueva Ubicación{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1><i class="bi bi-geo-alt"></i> Nueva Ubicación / Sector</h1>
+      <a href="{{ base_url }}/locations" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-header bg-light">
+        <strong>Datos del Sector / Zona</strong>
+      </div>
+      <div class="card-body">
+        {% if errors is defined and errors|length > 0 %}
+          <div class="alert alert-danger">
+            <ul class="mb-0">
+              {% for error in errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        <form method="post" action="{{ base_url }}/location/create">
+          {{ csrf_field() }}
+          <div class="mb-3">
+            <label class="form-label fw-bold">Nombre del Sector / Zona *</label>
+            <input type="text" name="name" required class="form-control" value="{{ old.name|default('') }}" placeholder="Ej: Zona Norte, Sector 4, Barrio El Centro...">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Descripción / Referencias</label>
+            <textarea name="description" class="form-control" rows="3" placeholder="Información de calles, delimitaciones, etc.">{{ old.description|default('') }}</textarea>
+          </div>
+
+          <div class="text-end">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Guardar Ubicación</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

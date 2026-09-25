@@ -1,0 +1,69 @@
+{% extends "layouts/main.html.twig" %}
+{% block title %}Medidores de Agua{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-md-12">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1><i class="bi bi-speedometer"></i> Medidores de Agua</h1>
+      <a href="{{ base_url }}/meter/new" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Nuevo Medidor</a>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-header bg-light">
+        <strong>Inventario de Medidores</strong>
+      </div>
+      <div class="card-body p-0">
+        {% if meters|length > 0 %}
+          <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th style="width: 60px;">#</th>
+                  <th>Identificador</th>
+                  <th>Marca</th>
+                  <th>Serie</th>
+                  <th>Expedición</th>
+                  <th>Expiración</th>
+                  <th>Estado</th>
+                  <th style="width: 140px;" class="text-end">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for meter in meters %}
+                  <tr>
+                    <td>{{ meter.id }}</td>
+                    <td>
+                      <strong class="text-primary font-monospace">{{ meter.identifier }}</strong>
+                    </td>
+                    <td>{{ meter.brand }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ meter.serie }}</span></td>
+                    <td>{{ meter.issued_at ? meter.issued_at : '<span class="text-muted">-</span>'|raw }}</td>
+                    <td>{{ meter.expired_at ? meter.expired_at : '<span class="text-muted">-</span>'|raw }}</td>
+                    <td>
+                      <span class="badge bg-{{ meter.getStatusBadge() }}">
+                        {{ meter.getStatusLabel() }}
+                      </span>
+                    </td>
+                    <td class="text-end">
+                      <a href="{{ base_url }}/meter/{{ meter.id }}/edit" class="btn btn-warning btn-sm" title="Editar"><i class="bi bi-pencil"></i></a>
+                      <form action="{{ base_url }}/meter/{{ meter.id }}/delete" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar este medidor?');">
+                        {{ csrf_field() }}
+                        <button type="submit" class="btn btn-danger btn-sm" title="Eliminar"><i class="bi bi-trash"></i></button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="p-4 text-center text-muted">
+            <i class="bi bi-speedometer2 fs-3 d-block mb-2"></i>
+            No hay medidores registrados.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

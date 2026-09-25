@@ -1,0 +1,185 @@
+{% extends "layouts/main.html.twig" %}
+{% block title %}Registrar Lectura de Medidor{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-9">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1><i class="bi bi-speedometer2"></i> Registrar Toma de Lectura</h1>
+      <a href="{{ base_url }}/vals" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-header bg-light">
+        <strong>Formulario de Lectura de Consumo</strong>
+      </div>
+      <div class="card-body">
+        {% if errors is defined and errors|length > 0 %}
+          <div class="alert alert-danger">
+            <ul class="mb-0">
+              {% for error in errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        <form method="post" action="{{ base_url }}/val/create" enctype="multipart/form-data">
+          {{ csrf_field() }}
+
+          <div class="mb-4">
+            <label class="form-label fw-bold">Seleccionar Cliente / Abonado *</label>
+            <select name="client_id" id="client_select" class="form-select select2" required>
+              <option value="">-- Buscar por Nombre o Contrato --</option>
+              {% for c in clients %}
+                {% set met = c.getMeter() %}
+                <option value="{{ c.id }}" 
+                        data-has-meter="{{ met ? '1' : '0' }}"
+                        {{ (selected_client_id == c.id or old.client_id|default('') == c.id) ? 'selected' : '' }}>
+                  {{ c.getFullName() }} ({{ c.code|default('C-' ~ c.id) }}) - Medidor: {{ met ? met.identifier : 'SIN MEDIDOR' }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Info del Medidor y Lectura Anterior -->
+          <div class="card bg-light border mb-4" id="meter_info_box">
+            <div class="card-body">
+              <div class="row align-items-center">
+                <div class="col-md-6 border-end">
+                  <div class="small text-muted text-uppercase fw-bold">Medidor Asignado</div>
+                  <div class="fs-5 fw-bold text-primary" id="meter_identifier">
+                    {% if selected_client and selected_client.getMeter() %}
+                      {{ selected_client.getMeter().identifier }} ({{ selected_client.getMeter().brand }})
+                    {% else %}
+                      Seleccione un cliente...
+                    {% endif %}
+                  </div>
+                  <div class="small text-muted" id="meter_serie">
+                    {% if selected_client and selected_client.getMeter() %}
+                      Serie: {{ selected_client.getMeter().serie }}
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div class="col-md-6 ps-md-4">
+                  <div class="small text-muted text-uppercase fw-bold">Lectura Anterior Registrada</div>
+                  <div class="fs-4 font-monospace fw-bold text-dark" id="display_previous_val">
+                    {{ last_reading ? last_reading.val|number_format(2) ~ ' m³' : '0.00 m³' }}
+                  </div>
+                  <div class="small text-muted" id="display_last_date">
+                    {{ last_reading ? 'Fecha: ' ~ last_reading.date_at : 'Sin lecturas previas' }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <input type="hidden" name="previous_val" id="previous_val_input" value="{{ last_reading ? last_reading.val : '0.00' }}">
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Fecha de la Toma *</label>
+              <input type="date" name="date_at" required class="form-control" value="{{ old.date_at|default("now"|date("Y-m-d")) }}">
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Periodo de Facturación *</label>
+              <input type="month" name="period" required class="form-control" value="{{ old.period|default("now"|date("Y-m")) }}">
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold fs-5 text-primary">Lectura Actual del Medidor *</label>
+              <div class="input-group input-group-lg">
+                <input type="number" step="0.01" min="0" name="val" id="val_input" required class="form-control font-monospace fw-bold" placeholder="0.00" value="{{ old.val|default('') }}">
+                <span class="input-group-text">m³</span>
+              </div>
+              <div class="form-text">Ingrese el valor numérico visible en la carátula del medidor.</div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold fs-5 text-success">Consumo Calculado</label>
+              <div class="p-2 border rounded bg-success bg-opacity-10 text-success text-center">
+                <div class="fs-2 fw-bold font-monospace" id="calculated_consumption">0.00 m³</div>
+                <div class="small text-muted">Consumo neto del periodo</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold"><i class="bi bi-camera"></i> Fotografía de Evidencia (Opcional)</label>
+            <input type="file" name="image" class="form-control" accept="image/*">
+            <div class="form-text">Puedes capturar o subir una foto del reloj del medidor como comprobante.</div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label">Observaciones / Incidencias</label>
+            <textarea name="comment" class="form-control" rows="2" placeholder="Fuga visible, perro bravo, medidor empañado, etc.">{{ old.comment|default('') }}</textarea>
+          </div>
+
+          <div class="text-end">
+            <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-check-circle"></i> Guardar Lectura</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const clientSelect = document.getElementById('client_select');
+  const prevValInput = document.getElementById('previous_val_input');
+  const valInput = document.getElementById('val_input');
+  const dispPrev = document.getElementById('display_previous_val');
+  const dispLastDate = document.getElementById('display_last_date');
+  const meterIdent = document.getElementById('meter_identifier');
+  const meterSerie = document.getElementById('meter_serie');
+  const calcCons = document.getElementById('calculated_consumption');
+
+  function updateConsumption() {
+    const prev = parseFloat(prevValInput.value) || 0;
+    const current = parseFloat(valInput.value) || 0;
+    let diff = current - prev;
+    if (diff < 0) {
+      diff = current; // Si dio la vuelta a cero
+    }
+    calcCons.innerText = diff.toFixed(2) + ' m³';
+  }
+
+  valInput.addEventListener('input', updateConsumption);
+
+  clientSelect.addEventListener('change', function() {
+    const clientId = this.value;
+    if (!clientId) {
+      meterIdent.innerText = 'Seleccione un cliente...';
+      meterSerie.innerText = '';
+      dispPrev.innerText = '0.00 m³';
+      prevValInput.value = '0.00';
+      updateConsumption();
+      return;
+    }
+
+    fetch('{{ base_url }}/val/last-reading?client_id=' + clientId)
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          prevValInput.value = data.previous_val;
+          dispPrev.innerText = data.previous_val.toFixed(2) + ' m³';
+          dispLastDate.innerText = data.last_date ? 'Fecha anterior: ' + data.last_date : 'Sin lecturas previas';
+          meterIdent.innerText = data.meter_identifier + (data.meter_brand ? ' (' + data.meter_brand + ')' : '');
+          meterSerie.innerText = data.meter_serie ? 'Serie: ' + data.meter_serie : '';
+          updateConsumption();
+        }
+      })
+      .catch(err => console.error('Error al consultar última lectura:', err));
+  });
+
+  // Si ya tiene valor al cargar
+  if (valInput.value) {
+    updateConsumption();
+  }
+});
+</script>
+{% endblock %}

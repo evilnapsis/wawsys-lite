@@ -1,0 +1,101 @@
+{% extends "layouts/main.html.twig" %}
+{% block title %}Clientes / Abonados{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-md-12">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1><i class="bi bi-people"></i> Clientes / Abonados</h1>
+      <div>
+        <a href="{{ base_url }}/val/new" class="btn btn-outline-primary me-2"><i class="bi bi-speedometer2"></i> Nueva Lectura</a>
+        <a href="{{ base_url }}/client/new" class="btn btn-primary"><i class="bi bi-person-plus"></i> Nuevo Cliente</a>
+      </div>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-header bg-light">
+        <strong>Directorio de Clientes de la Empresa</strong>
+      </div>
+      <div class="card-body p-0">
+        {% if clients|length > 0 %}
+          <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle mb-0 datatable">
+              <thead class="table-light">
+                <tr>
+                  <th>Código</th>
+                  <th>Cliente</th>
+                  <th>DNI / Cédula</th>
+                  <th>Teléfono</th>
+                  <th>Ubicación / Sector</th>
+                  <th>Categoría</th>
+                  <th>Medidor</th>
+                  <th>Estado</th>
+                  <th style="width: 170px;" class="text-end">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for client in clients %}
+                  {% set loc = client.getLocation() %}
+                  {% set cat = client.getCategory() %}
+                  {% set met = client.getMeter() %}
+                  <tr>
+                    <td><span class="badge bg-secondary font-monospace">{{ client.code|default('C-' ~ client.id) }}</span></td>
+                    <td>
+                      <a href="{{ base_url }}/client/{{ client.id }}" class="fw-bold text-decoration-none">
+                        {{ client.getFullName() }}
+                      </a>
+                      {% if client.address %}
+                        <div class="small text-muted text-truncate" style="max-width: 200px;">{{ client.address }}</div>
+                      {% endif %}
+                    </td>
+                    <td>{{ client.dni|default('-') }}</td>
+                    <td>{{ client.phone|default('-') }}</td>
+                    <td>
+                      {% if loc %}
+                        <span class="badge bg-light text-dark border"><i class="bi bi-geo-alt"></i> {{ loc.name }}</span>
+                      {% else %}
+                        <span class="text-muted">Sin sector</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if cat %}
+                        <span class="badge bg-info text-dark">{{ cat.name }}</span>
+                      {% else %}
+                        <span class="text-muted">Sin categoría</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if met %}
+                        <span class="badge bg-primary font-monospace"><i class="bi bi-speedometer2"></i> {{ met.identifier }}</span>
+                      {% else %}
+                        <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle"></i> Sin medidor</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <span class="badge bg-{{ client.getStatusBadge() }}">
+                        {{ client.getStatusLabel() }}
+                      </span>
+                    </td>
+                    <td class="text-end">
+                      <a href="{{ base_url }}/client/{{ client.id }}" class="btn btn-info btn-sm text-white" title="Ver Historial"><i class="bi bi-eye"></i></a>
+                      <a href="{{ base_url }}/client/{{ client.id }}/edit" class="btn btn-warning btn-sm" title="Editar"><i class="bi bi-pencil"></i></a>
+                      <form action="{{ base_url }}/client/{{ client.id }}/delete" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar este cliente y sus lecturas?');">
+                        {{ csrf_field() }}
+                        <button type="submit" class="btn btn-danger btn-sm" title="Eliminar"><i class="bi bi-trash"></i></button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="p-4 text-center text-muted">
+            <i class="bi bi-people fs-3 d-block mb-2"></i>
+            No hay clientes registrados en el sistema.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

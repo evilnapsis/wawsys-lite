@@ -1,74 +1,106 @@
 <?php
+/**
+ * Modelo unificado para Clientes (kind=1) y Proveedores (kind=2).
+ */
 class PersonData {
 	public static $tablename = "person";
+	public $id;
+	public $image;
+	public $name;
+	public $lastname;
+	public $company;
+	public $address1;
+	public $address2;
+	public $phone1;
+	public $phone2;
+	public $email1;
+	public $email2;
+	public $kind;
+	public $created_at;
 
-	public function PersonData(){
+	public function __construct(){
 		$this->name = "";
 		$this->lastname = "";
-		$this->username = "";
-		$this->email = "";
-		$this->password = "";
+		$this->email1 = "";
+		$this->image = "";
 		$this->created_at = "NOW()";
 	}
 
-	public function add(){
-		$sql = "insert into ".self::$tablename." (name,lastname,address,email,phone,created_at) ";
-		$sql .= "value (\"$this->name\",\"$this->lastname\",\"$this->address\",\"$this->email\",\"$this->phone\",$this->created_at)";
-		Executor::doit($sql);
+	private static function db(): \PDO {
+		return Database::getPdo();
 	}
 
+	public function add($kind){
+		$stmt = self::db()->prepare(
+			"insert into ".self::$tablename." (name,lastname,address1,email1,phone1,kind,created_at) ".
+			"values (:name,:lastname,:address1,:email1,:phone1,:kind,NOW())"
+		);
+		$stmt->execute([
+			'name' => $this->name,
+			'lastname' => $this->lastname,
+			'address1' => $this->address1,
+			'email1' => $this->email1,
+			'phone1' => $this->phone1,
+			'kind' => $kind,
+		]);
+		$this->id = self::db()->lastInsertId();
+	}
+
+	public static function delById($id){
+		$stmt = self::db()->prepare("delete from ".self::$tablename." where id = :id");
+		$stmt->execute(['id' => $id]);
+	}
 	public function del(){
-		$sql = "delete from ".self::$tablename." where id=$this->id";
-		Executor::doit($sql);
+		self::delById($this->id);
 	}
 
-	public static function delBy($k,$v){
-		$sql = "delete from ".self::$tablename." where $k=\"$v\"";
-		Executor::doit($sql);
-	}
-
+	// partiendo de que ya tenemos creado un objecto PersonData previamente utilizamos el contexto
 	public function update(){
-		$sql = "update ".self::$tablename." set name=\"$this->name\",lastname=\"$this->lastname\",address=\"$this->address\",email=\"$this->email\",phone=\"$this->phone\" where id=$this->id";
-		Executor::doit($sql);
-	}
-
-
-	public function updateById($k,$v){
-		$sql = "update ".self::$tablename." set $k=\"$v\" where id=$this->id";
-		Executor::doit($sql);
+		$stmt = self::db()->prepare(
+			"update ".self::$tablename." set name=:name, email1=:email1, address1=:address1, ".
+			"lastname=:lastname, phone1=:phone1 where id=:id"
+		);
+		$stmt->execute([
+			'name' => $this->name,
+			'email1' => $this->email1,
+			'address1' => $this->address1,
+			'lastname' => $this->lastname,
+			'phone1' => $this->phone1,
+			'id' => $this->id,
+		]);
 	}
 
 	public static function getById($id){
-		 $sql = "select * from ".self::$tablename." where id=$id";
-		$query = Executor::doit($sql);
-		return Model::one($query[0],new PersonData());
-	}
-
-	public static function getBy($k,$v){
-		$sql = "select * from ".self::$tablename." where $k=\"$v\"";
-		$query = Executor::doit($sql);
-		return Model::one($query[0],new PersonData());
+		$stmt = self::db()->prepare("select * from ".self::$tablename." where id = :id");
+		$stmt->execute(['id' => $id]);
+		$stmt->setFetchMode(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, self::class);
+		return $stmt->fetch() ?: null;
 	}
 
 	public static function getAll(){
-		 $sql = "select * from ".self::$tablename;
-		$query = Executor::doit($sql);
-		return Model::many($query[0],new PersonData());
+		$stmt = self::db()->query("select * from ".self::$tablename);
+		return $stmt->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, self::class);
 	}
 
-	public static function getAllBy($k,$v){
-		 $sql = "select * from ".self::$tablename." where $k=\"$v\"";
-		$query = Executor::doit($sql);
-		return Model::many($query[0],new PersonData());
+	public static function getClients(){
+		return self::getByKind(1);
 	}
 
+	public static function getProviders(){
+		return self::getByKind(2);
+	}
+
+	private static function getByKind($kind){
+		$stmt = self::db()->prepare("select * from ".self::$tablename." where kind = :kind order by name, lastname");
+		$stmt->execute(['kind' => $kind]);
+		return $stmt->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, self::class);
+	}
 
 	public static function getLike($q){
-		$sql = "select * from ".self::$tablename." where name like '%$q%'";
-		$query = Executor::doit($sql);
-		return Model::many($query[0],new PersonData());
+		$stmt = self::db()->prepare("select * from ".self::$tablename." where name like :q");
+		$stmt->execute(['q' => '%'.$q.'%']);
+		return $stmt->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, self::class);
 	}
-
 
 }
 

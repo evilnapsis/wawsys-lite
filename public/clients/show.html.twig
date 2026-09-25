@@ -1,0 +1,203 @@
+{% extends "layouts/main.html.twig" %}
+{% block title %}Expediente: {{ client.getFullName() }}{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-md-12">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1><i class="bi bi-person-badge"></i> Expediente del Abonado</h1>
+      <div>
+        <a href="{{ base_url }}/val/new?client_id={{ client.id }}" class="btn btn-success me-2"><i class="bi bi-speedometer2"></i> Registrar Lectura</a>
+        <a href="{{ base_url }}/client/{{ client.id }}/edit" class="btn btn-warning me-2"><i class="bi bi-pencil"></i> Editar Cliente</a>
+        <a href="{{ base_url }}/clients" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Tarjeta de Datos del Cliente -->
+      <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+          <div class="card-header bg-light">
+            <strong><i class="bi bi-info-circle me-1"></i> Información General del Suministro</strong>
+          </div>
+          <div class="card-body">
+            <table class="table table-sm table-borderless">
+              <tr>
+                <th style="width: 40%;">Código / Contrato:</th>
+                <td><span class="badge bg-secondary font-monospace fs-6">{{ client.code|default('C-' ~ client.id) }}</span></td>
+              </tr>
+              <tr>
+                <th>Titular:</th>
+                <td><strong class="fs-5 text-primary">{{ client.getFullName() }}</strong></td>
+              </tr>
+              <tr>
+                <th>DNI / Cédula:</th>
+                <td>{{ client.dni|default('No registrado') }}</td>
+              </tr>
+              <tr>
+                <th>Teléfono:</th>
+                <td>{{ client.phone|default('No registrado') }}</td>
+              </tr>
+              <tr>
+                <th>Email:</th>
+                <td>{{ client.email|default('No registrado') }}</td>
+              </tr>
+              <tr>
+                <th>Dirección:</th>
+                <td>{{ client.address|default('No especificada') }}</td>
+              </tr>
+              <tr>
+                <th>Sector / Ubicación:</th>
+                <td>
+                  {% set loc = client.getLocation() %}
+                  {% if loc %}
+                    <span class="badge bg-light text-dark border"><i class="bi bi-geo-alt"></i> {{ loc.name }}</span>
+                  {% else %}
+                    <span class="text-muted">Sin sector</span>
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <th>Categoría de Consumo:</th>
+                <td>
+                  {% set cat = client.getCategory() %}
+                  {% if cat %}
+                    <span class="badge bg-info text-dark">{{ cat.name }}</span>
+                  {% else %}
+                    <span class="text-muted">Sin categoría</span>
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <th>Estado del Servicio:</th>
+                <td>
+                  <span class="badge bg-{{ client.getStatusBadge() }} fs-6">
+                    {{ client.getStatusLabel() }}
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tarjeta del Medidor Asignado -->
+      <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+          <div class="card-header bg-light">
+            <strong><i class="bi bi-speedometer me-1"></i> Medidor de Agua Asignado</strong>
+          </div>
+          <div class="card-body">
+            {% set meter = client.getMeter() %}
+            {% if meter %}
+              <div class="d-flex align-items-center mb-3 p-3 bg-light rounded border">
+                <i class="bi bi-speedometer2 display-4 text-primary me-3"></i>
+                <div>
+                  <h4 class="mb-0 font-monospace text-primary">{{ meter.identifier }}</h4>
+                  <div class="text-muted">Marca: <strong>{{ meter.brand }}</strong> | Serie: <strong>{{ meter.serie }}</strong></div>
+                </div>
+              </div>
+              <table class="table table-sm table-borderless">
+                <tr>
+                  <th style="width: 40%;">Estado del Medidor:</th>
+                  <td>
+                    <span class="badge bg-{{ meter.getStatusBadge() }}">
+                      {{ meter.getStatusLabel() }}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <th>Fecha de Expedición:</th>
+                  <td>{{ meter.issued_at ? meter.issued_at : '-' }}</td>
+                </tr>
+                <tr>
+                  <th>Fecha de Expiración:</th>
+                  <td>{{ meter.expired_at ? meter.expired_at : '-' }}</td>
+                </tr>
+                <tr>
+                  <th>Registrado el:</th>
+                  <td>{{ meter.created_at|slice(0, 10) }}</td>
+                </tr>
+              </table>
+            {% else %}
+              <div class="p-4 text-center text-muted">
+                <i class="bi bi-exclamation-triangle fs-1 text-warning d-block mb-2"></i>
+                <p class="mb-3">Este cliente aún no tiene un medidor asignado.</p>
+                <a href="{{ base_url }}/client/{{ client.id }}/edit" class="btn btn-outline-primary btn-sm">Asignar Medidor Ahora</a>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historial de Lecturas -->
+    <div class="card shadow-sm">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <strong><i class="bi bi-card-checklist me-1"></i> Historial de Lecturas de Consumo</strong>
+        <a href="{{ base_url }}/val/new?client_id={{ client.id }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Nueva Lectura</a>
+      </div>
+      <div class="card-body p-0">
+        {% if readings|length > 0 %}
+          <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>#</th>
+                  <th>Fecha</th>
+                  <th>Periodo</th>
+                  <th>Lectura Anterior</th>
+                  <th>Lectura Actual</th>
+                  <th>Consumo Neto</th>
+                  <th>Evidencia</th>
+                  <th>Observaciones</th>
+                  <th>Lector</th>
+                  <th style="width: 100px;" class="text-end">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in readings %}
+                  {% set u = r.getUser() %}
+                  <tr>
+                    <td>{{ r.id }}</td>
+                    <td><i class="bi bi-calendar3 me-1"></i>{{ r.date_at }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ r.period }}</span></td>
+                    <td class="text-muted font-monospace">{{ r.previous_val|number_format(2) }} m³</td>
+                    <td class="fw-bold font-monospace text-primary">{{ r.val|number_format(2) }} m³</td>
+                    <td>
+                      <span class="badge bg-success font-monospace fs-6">
+                        +{{ r.consumption|number_format(2) }} m³
+                      </span>
+                    </td>
+                    <td>
+                      {% if r.image %}
+                        <a href="{{ r.image }}" target="_blank" class="btn btn-outline-secondary btn-sm" title="Ver Fotografía">
+                          <i class="bi bi-camera"></i> Foto
+                        </a>
+                      {% else %}
+                        <span class="text-muted small">Sin foto</span>
+                      {% endif %}
+                    </td>
+                    <td class="small text-muted">{{ r.comment|default('-') }}</td>
+                    <td class="small">{{ u ? u.name : 'Sistema' }}</td>
+                    <td class="text-end">
+                      <form action="{{ base_url }}/val/{{ r.id }}/delete" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar esta lectura?');">
+                        {{ csrf_field() }}
+                        <button type="submit" class="btn btn-danger btn-sm" title="Eliminar"><i class="bi bi-trash"></i></button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="p-4 text-center text-muted">
+            <i class="bi bi-card-checklist fs-3 d-block mb-2"></i>
+            No se han registrado lecturas de consumo para este cliente.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

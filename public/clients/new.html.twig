@@ -1,0 +1,129 @@
+{% extends "layouts/main.html.twig" %}
+{% block title %}Nuevo Cliente{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-10">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1><i class="bi bi-person-plus"></i> Nuevo Cliente / Abonado</h1>
+      <a href="{{ base_url }}/clients" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-header bg-light">
+        <strong>Ficha de Registro de Suministro de Agua</strong>
+      </div>
+      <div class="card-body">
+        {% if errors is defined and errors|length > 0 %}
+          <div class="alert alert-danger">
+            <ul class="mb-0">
+              {% for error in errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        <form method="post" action="{{ base_url }}/client/create">
+          {{ csrf_field() }}
+
+          <h5 class="text-primary border-bottom pb-2 mb-3"><i class="bi bi-person"></i> Datos Personales</h5>
+          <div class="row">
+            <div class="col-md-3 mb-3">
+              <label class="form-label fw-bold">Código de Contrato / Cuenta</label>
+              <input type="text" name="code" class="form-control" value="{{ old.code|default('') }}" placeholder="Ej: CTA-0012">
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label class="form-label fw-bold">Nombre(s) *</label>
+              <input type="text" name="name" required class="form-control" value="{{ old.name|default('') }}" placeholder="Nombre del titular">
+            </div>
+
+            <div class="col-md-5 mb-3">
+              <label class="form-label fw-bold">Apellidos</label>
+              <input type="text" name="lastname" class="form-control" value="{{ old.lastname|default('') }}" placeholder="Apellidos del titular">
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label">DNI / Cédula / Identificación</label>
+              <input type="text" name="dni" class="form-control" value="{{ old.dni|default('') }}" placeholder="Documento de identidad">
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Teléfono</label>
+              <input type="text" name="phone" class="form-control" value="{{ old.phone|default('') }}" placeholder="Teléfono de contacto">
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Correo Electrónico</label>
+              <input type="email" name="email" class="form-control" value="{{ old.email|default('') }}" placeholder="correo@ejemplo.com">
+            </div>
+          </div>
+
+          <h5 class="text-primary border-bottom pb-2 mb-3 mt-3"><i class="bi bi-geo-alt"></i> Ubicación y Suministro</h5>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Ubicación / Sector</label>
+              <select name="location_id" class="form-select select2">
+                <option value="">-- Seleccionar Sector / Zona --</option>
+                {% for loc in locations %}
+                  <option value="{{ loc.id }}" {{ (old.location_id|default('') == loc.id) ? 'selected' : '' }}>
+                    {{ loc.name }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Categoría de Consumo</label>
+              <select name="category_id" class="form-select select2">
+                <option value="">-- Seleccionar Categoría --</option>
+                {% for cat in categories %}
+                  <option value="{{ cat.id }}" {{ (old.category_id|default('') == cat.id) ? 'selected' : '' }}>
+                    {{ cat.name }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Dirección Física del Suministro</label>
+            <input type="text" name="address" class="form-control" value="{{ old.address|default('') }}" placeholder="Calle, número, referencias del inmueble">
+          </div>
+
+          <h5 class="text-primary border-bottom pb-2 mb-3 mt-3"><i class="bi bi-speedometer2"></i> Asignación de Medidor</h5>
+          <div class="row">
+            <div class="col-md-8 mb-3">
+              <label class="form-label fw-bold">Medidor de Agua</label>
+              <select name="meter_id" class="form-select select2">
+                <option value="">-- Asignar Medidor (Opcional por ahora) --</option>
+                {% for met in meters %}
+                  <option value="{{ met.id }}" {{ (old.meter_id|default('') == met.id) ? 'selected' : '' }}>
+                    {{ met.identifier }} - {{ met.brand }} (Serie: {{ met.serie }})
+                  </option>
+                {% endfor %}
+              </select>
+              <div class="form-text">Solo se muestran medidores activos disponibles sin cliente asignado.</div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label class="form-label fw-bold">Estado del Servicio *</label>
+              <select name="status" class="form-select">
+                <option value="1" {{ (old.status|default(1) == 1) ? 'selected' : '' }}>1. Activo</option>
+                <option value="2" {{ (old.status|default(1) == 2) ? 'selected' : '' }}>2. Suspendido</option>
+                <option value="3" {{ (old.status|default(1) == 3) ? 'selected' : '' }}>3. Cancelado</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="text-end mt-4">
+            <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-check-circle"></i> Registrar Cliente</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

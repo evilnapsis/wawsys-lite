@@ -1,0 +1,46 @@
+{% extends "layouts/main.html.twig" %}
+{% block title %}Editar Categoría{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1><i class="bi bi-pencil-square"></i> Editar Categoría</h1>
+      <a href="{{ base_url }}/categories" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-header bg-light">
+        <strong>Editar Categoría: {{ category.name }}</strong>
+      </div>
+      <div class="card-body">
+        {% if errors is defined and errors|length > 0 %}
+          <div class="alert alert-danger">
+            <ul class="mb-0">
+              {% for error in errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        <form method="post" action="{{ base_url }}/category/{{ category.id }}/update">
+          {{ csrf_field() }}
+          <div class="mb-3">
+            <label class="form-label fw-bold">Nombre *</label>
+            <input type="text" name="name" required class="form-control" value="{{ category.name }}" placeholder="Nombre de categoría">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <textarea name="description" class="form-control" rows="3" placeholder="Detalles de la categoría...">{{ category.description }}</textarea>
+          </div>
+
+          <div class="text-end">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Actualizar Categoría</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

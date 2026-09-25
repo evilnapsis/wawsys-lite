@@ -1,79 +1,172 @@
 <?php
+/**
+ * Modelo de usuarios del sistema.
+ * Status: 1. Activo, 2. Inactivo, 3. Suspendido
+ * Kind: 1. Administrador, 2. Operador / Lector
+ */
 class UserData {
 	public static $tablename = "user";
+	public $id;
+	public $name;
+	public $lastname;
+	public $username;
+	public $email;
+	public $password;
+	public $image;
+	public $status;
+	public $kind;
+	public $created_at;
 
-	public function Userdata(){
+	public function __construct(){
 		$this->name = "";
 		$this->lastname = "";
 		$this->username = "";
 		$this->email = "";
+		$this->image = "";
 		$this->password = "";
+		$this->status = 1;
+		$this->kind = 1;
 		$this->created_at = "NOW()";
 	}
 
+	public function __get($name){
+		if ($name === 'is_active') {
+			return (int)$this->status === 1;
+		}
+		if ($name === 'is_admin') {
+			return (int)$this->kind === 1;
+		}
+		return null;
+	}
+
+	public function __set($name, $value){
+		if ($name === 'is_active') {
+			$this->status = !empty($value) ? 1 : 2;
+		} elseif ($name === 'is_admin') {
+			$this->kind = !empty($value) ? 1 : 2;
+		}
+	}
+
+	public function __isset($name){
+		return in_array($name, ['is_active', 'is_admin']);
+	}
+
+	private static function db(): \PDO {
+		return Database::getPdo();
+	}
+
 	public function add(){
-		$sql = "insert into user (kind,franchise_id,expire_at,name,lastname,username,email,password,created_at) ";
-		$sql .= "value (\"$this->kind\",$this->franchise_id,\"$this->expire_at\",\"$this->name\",\"$this->lastname\",\"$this->username\",\"$this->email\",\"$this->password\",$this->created_at)";
-		Executor::doit($sql);
+		$status = isset($this->status) ? (int)$this->status : 1;
+		$kind = isset($this->kind) ? (int)$this->kind : 1;
+
+		$stmt = self::db()->prepare(
+			"insert into ".self::$tablename." (name, lastname, username, email, password, image, status, kind, created_at)
+			 values (:name, :lastname, :username, :email, :password, :image, :status, :kind, NOW())"
+		);
+		$stmt->execute([
+			'name' => $this->name,
+			'lastname' => $this->lastname ?? '',
+			'username' => $this->username,
+			'email' => !empty($this->email) ? $this->email : null,
+			'password' => $this->password,
+			'image' => !empty($this->image) ? $this->image : null,
+			'status' => $status,
+			'kind' => $kind,
+		]);
+		$this->id = self::db()->lastInsertId();
+	}
+
+	public static function delById($id){
+		$stmt = self::db()->prepare("delete from ".self::$tablename." where id = :id");
+		$stmt->execute(['id' => $id]);
 	}
 
 	public function del(){
-		$sql = "delete from ".self::$tablename." where id=$this->id";
-		Executor::doit($sql);
-	}
-
-	public static function delBy($k,$v){
-		$sql = "delete from ".self::$tablename." where $k=\"$v\"";
-		Executor::doit($sql);
+		self::delById($this->id);
 	}
 
 	public function update(){
-		$sql = "update ".self::$tablename." set name=\"$this->name\",lastname=\"$this->lastname\",username=\"$this->username\",email=\"$this->email\",expire_at=\"$this->expire_at\",franchise_id=$this->franchise_id where id=$this->id";
-		Executor::doit($sql);
+		$status = isset($this->status) ? (int)$this->status : 1;
+		$kind = isset($this->kind) ? (int)$this->kind : 1;
+
+		$stmt = self::db()->prepare(
+			"update ".self::$tablename." 
+			 set name = :name, lastname = :lastname, username = :username,
+			     email = :email, status = :status, kind = :kind, image = :image
+			 where id = :id"
+		);
+		$stmt->execute([
+			'name' => $this->name,
+			'lastname' => $this->lastname ?? '',
+			'username' => $this->username,
+			'email' => !empty($this->email) ? $this->email : null,
+			'status' => $status,
+			'kind' => $kind,
+			'image' => !empty($this->image) ? $this->image : null,
+			'id' => $this->id,
+		]);
 	}
 
 	public function update_passwd(){
-		$sql = "update ".self::$tablename." set password=\"$this->password\" where id=$this->id";
-		Executor::doit($sql);
-	}
-
-	public function updateById($k,$v){
-		$sql = "update ".self::$tablename." set $k=\"$v\" where id=$this->id";
-		Executor::doit($sql);
+		$stmt = self::db()->prepare("update ".self::$tablename." set password = :password where id = :id");
+		$stmt->execute(['password' => $this->password, 'id' => $this->id]);
 	}
 
 	public static function getById($id){
-		 $sql = "select * from ".self::$tablename." where id=$id";
-		$query = Executor::doit($sql);
-		return Model::one($query[0],new UserData());
+		$stmt = self::db()->prepare("select * from ".self::$tablename." where id = :id");
+		$stmt->execute(['id' => $id]);
+		$stmt->setFetchMode(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, self::class);
+		return $stmt->fetch() ?: null;
 	}
 
-	public static function getBy($k,$v){
-		$sql = "select * from ".self::$tablename." where $k=\"$v\"";
-		$query = Executor::doit($sql);
-		return Model::one($query[0],new UserData());
+	public static function getByUsername($username){
+		$stmt = self::db()->prepare("select * from ".self::$tablename." where username = :u");
+		$stmt->execute(['u' => $username]);
+		$stmt->setFetchMode(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, self::class);
+		return $stmt->fetch() ?: null;
+	}
+
+	public static function getByMail($mail){
+		$stmt = self::db()->prepare("select * from ".self::$tablename." where email = :email");
+		$stmt->execute(['email' => $mail]);
+		$stmt->setFetchMode(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, self::class);
+		return $stmt->fetch() ?: null;
 	}
 
 	public static function getAll(){
-		 $sql = "select * from ".self::$tablename;
-		$query = Executor::doit($sql);
-		return Model::many($query[0],new UserData());
+		$stmt = self::db()->query("select * from ".self::$tablename." order by id desc");
+		return $stmt->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, self::class);
 	}
 
-	public static function getAllBy($k,$v){
-		 $sql = "select * from ".self::$tablename." where $k=\"$v\"";
-		$query = Executor::doit($sql);
-		return Model::many($query[0],new UserData());
+	public static function countAll(): int {
+		$stmt = self::db()->query("select count(*) from ".self::$tablename);
+		return (int) $stmt->fetchColumn();
 	}
 
-
-	public static function getLike($q){
-		$sql = "select * from ".self::$tablename." where name like '%$q%'";
-		$query = Executor::doit($sql);
-		return Model::many($query[0],new UserData());
+	public function getKindLabel(): string {
+		switch ((int)$this->kind) {
+			case 1: return "Administrador";
+			case 2: return "Operador / Lector";
+			default: return "Otro";
+		}
 	}
 
+	public function getStatusLabel(): string {
+		switch ((int)$this->status) {
+			case 1: return "Activo";
+			case 2: return "Inactivo";
+			case 3: return "Suspendido";
+			default: return "Desconocido";
+		}
+	}
 
+	public function getStatusBadge(): string {
+		switch ((int)$this->status) {
+			case 1: return "success";
+			case 2: return "secondary";
+			case 3: return "danger";
+			default: return "secondary";
+		}
+	}
 }
-
 ?>

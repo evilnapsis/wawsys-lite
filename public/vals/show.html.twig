@@ -1,0 +1,96 @@
+{% extends "layouts/main.html.twig" %}
+{% block title %}Detalle de Lectura #{{ reading.id }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1><i class="bi bi-card-checklist"></i> Detalle de Lectura #{{ reading.id }}</h1>
+      <div>
+        <a href="{{ base_url }}/vals" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+      </div>
+    </div>
+
+    {% set client = reading.getClient() %}
+    {% set meter = reading.getMeter() %}
+    {% set user = reading.getUser() %}
+
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <strong>Lectura registrada el {{ reading.date_at }}</strong>
+        <span class="badge bg-secondary font-monospace">{{ reading.period }}</span>
+      </div>
+      <div class="card-body">
+        <div class="row mb-4">
+          <div class="col-md-6 border-end">
+            <h6 class="text-muted text-uppercase">Cliente</h6>
+            {% if client %}
+              <div class="fs-5 fw-bold text-primary">
+                <a href="{{ base_url }}/client/{{ client.id }}" class="text-decoration-none">
+                  {{ client.getFullName() }}
+                </a>
+              </div>
+              <div class="text-muted small">Contrato: {{ client.code|default('C-' ~ client.id) }}</div>
+              <div class="text-muted small">Dirección: {{ client.address|default('-') }}</div>
+            {% else %}
+              <div class="text-muted">Cliente no encontrado</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6 ps-md-4">
+            <h6 class="text-muted text-uppercase">Medidor</h6>
+            {% if meter %}
+              <div class="fs-5 fw-bold text-dark font-monospace">{{ meter.identifier }}</div>
+              <div class="text-muted small">Marca: {{ meter.brand }} | Serie: {{ meter.serie }}</div>
+            {% else %}
+              <div class="text-muted">Medidor no encontrado</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="row text-center bg-light p-3 rounded mb-4 border">
+          <div class="col-md-4">
+            <div class="text-muted small text-uppercase">Lectura Anterior</div>
+            <div class="fs-4 font-monospace text-muted">{{ reading.previous_val|number_format(2) }} m³</div>
+          </div>
+          <div class="col-md-4 border-start border-end">
+            <div class="text-muted small text-uppercase">Lectura Actual</div>
+            <div class="fs-3 font-monospace fw-bold text-primary">{{ reading.val|number_format(2) }} m³</div>
+          </div>
+          <div class="col-md-4">
+            <div class="text-muted small text-uppercase">Consumo Neto</div>
+            <div class="fs-3 font-monospace fw-bold text-success">+{{ reading.consumption|number_format(2) }} m³</div>
+          </div>
+        </div>
+
+        {% if reading.comment %}
+          <div class="mb-4">
+            <h6 class="text-muted text-uppercase">Observaciones</h6>
+            <div class="p-3 bg-light rounded border text-muted">
+              {{ reading.comment }}
+            </div>
+          </div>
+        {% endif %}
+
+        {% if reading.image %}
+          <div class="mb-4">
+            <h6 class="text-muted text-uppercase mb-2"><i class="bi bi-camera"></i> Evidencia Fotográfica</h6>
+            <div class="text-center p-2 border rounded bg-light">
+              <img src="{{ reading.image }}" alt="Foto de lectura" class="img-fluid rounded shadow-sm" style="max-height: 400px;">
+            </div>
+          </div>
+        {% endif %}
+
+        <div class="text-muted small border-top pt-3 d-flex justify-content-between align-items-center">
+          <div>
+            Registrado por: <strong>{{ user ? user.name : 'Sistema' }}</strong> el {{ reading.created_at }}
+          </div>
+          <form action="{{ base_url }}/val/{{ reading.id }}/delete" method="POST" onsubmit="return confirm('¿Seguro de eliminar esta lectura?');">
+            {{ csrf_field() }}
+            <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i> Eliminar Registro</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

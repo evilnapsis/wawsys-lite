@@ -1,0 +1,131 @@
+{% extends "layouts/main.html.twig" %}
+{% block title %}Editar Cliente{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-10">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1><i class="bi bi-pencil-square"></i> Editar Cliente</h1>
+      <div>
+        <a href="{{ base_url }}/client/{{ client.id }}" class="btn btn-outline-info me-2"><i class="bi bi-eye"></i> Ver Historial</a>
+        <a href="{{ base_url }}/clients" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+      </div>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-header bg-light">
+        <strong>Editar Datos: {{ client.getFullName() }}</strong>
+      </div>
+      <div class="card-body">
+        {% if errors is defined and errors|length > 0 %}
+          <div class="alert alert-danger">
+            <ul class="mb-0">
+              {% for error in errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        <form method="post" action="{{ base_url }}/client/{{ client.id }}/update">
+          {{ csrf_field() }}
+
+          <h5 class="text-primary border-bottom pb-2 mb-3"><i class="bi bi-person"></i> Datos Personales</h5>
+          <div class="row">
+            <div class="col-md-3 mb-3">
+              <label class="form-label fw-bold">Código de Contrato / Cuenta</label>
+              <input type="text" name="code" class="form-control" value="{{ client.code }}">
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label class="form-label fw-bold">Nombre(s) *</label>
+              <input type="text" name="name" required class="form-control" value="{{ client.name }}">
+            </div>
+
+            <div class="col-md-5 mb-3">
+              <label class="form-label fw-bold">Apellidos</label>
+              <input type="text" name="lastname" class="form-control" value="{{ client.lastname }}">
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label">DNI / Cédula / Identificación</label>
+              <input type="text" name="dni" class="form-control" value="{{ client.dni }}">
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Teléfono</label>
+              <input type="text" name="phone" class="form-control" value="{{ client.phone }}">
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Correo Electrónico</label>
+              <input type="email" name="email" class="form-control" value="{{ client.email }}">
+            </div>
+          </div>
+
+          <h5 class="text-primary border-bottom pb-2 mb-3 mt-3"><i class="bi bi-geo-alt"></i> Ubicación y Suministro</h5>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Ubicación / Sector</label>
+              <select name="location_id" class="form-select select2">
+                <option value="">-- Sin sector asignado --</option>
+                {% for loc in locations %}
+                  <option value="{{ loc.id }}" {{ (client.location_id == loc.id) ? 'selected' : '' }}>
+                    {{ loc.name }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Categoría de Consumo</label>
+              <select name="category_id" class="form-select select2">
+                <option value="">-- Sin categoría asignada --</option>
+                {% for cat in categories %}
+                  <option value="{{ cat.id }}" {{ (client.category_id == cat.id) ? 'selected' : '' }}>
+                    {{ cat.name }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Dirección Física del Suministro</label>
+            <input type="text" name="address" class="form-control" value="{{ client.address }}">
+          </div>
+
+          <h5 class="text-primary border-bottom pb-2 mb-3 mt-3"><i class="bi bi-speedometer2"></i> Asignación de Medidor</h5>
+          <div class="row">
+            <div class="col-md-8 mb-3">
+              <label class="form-label fw-bold">Medidor Asignado</label>
+              <select name="meter_id" class="form-select select2">
+                <option value="">-- Sin medidor asignado --</option>
+                {% for met in meters %}
+                  <option value="{{ met.id }}" {{ (client.meter_id == met.id) ? 'selected' : '' }}>
+                    {{ met.identifier }} - {{ met.brand }} (Serie: {{ met.serie }})
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label class="form-label fw-bold">Estado del Servicio *</label>
+              <select name="status" class="form-select">
+                <option value="1" {{ (client.status == 1) ? 'selected' : '' }}>1. Activo</option>
+                <option value="2" {{ (client.status == 2) ? 'selected' : '' }}>2. Suspendido</option>
+                <option value="3" {{ (client.status == 3) ? 'selected' : '' }}>3. Cancelado</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="text-end mt-4">
+            <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-check-circle"></i> Actualizar Cliente</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
