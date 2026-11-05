@@ -3,7 +3,7 @@
  * Modelo para definir el tipo de operación de inventario ("entrada" o "salida").
  */
 class OperationTypeData {
-	public static $tablename = "operation_type";
+	public static $tablename = TBL_PREFIX . "operation_type";
 	public $id;
 	public $name;
 

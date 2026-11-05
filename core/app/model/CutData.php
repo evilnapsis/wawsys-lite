@@ -3,7 +3,7 @@
  * Modelo para la gestión de cortes de período del sistema.
  */
 class CutData {
-	public static $tablename = "cut";
+	public static $tablename = TBL_PREFIX . "cut";
 	public $id;
 	public $finished_at;
 	public $created_at;

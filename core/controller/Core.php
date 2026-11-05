@@ -1,5 +1,8 @@
 <?php
 
+if(!defined('TBL_PREFIX')){
+	define('TBL_PREFIX', '');
+}
 
 // 14 de Abril del 2014
 // Core.php

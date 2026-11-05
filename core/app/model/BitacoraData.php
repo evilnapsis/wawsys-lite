@@ -3,7 +3,7 @@
  * Modelo para el registro de bitácora y auditoría de eventos del sistema.
  */
 class BitacoraData {
-	public static $tablename = "bitacora";
+	public static $tablename = TBL_PREFIX . "bitacora";
 	public $id, $description, $user_id, $module, $action, $created_at ;
 
 	public function __construct(){

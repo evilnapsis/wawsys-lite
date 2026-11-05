@@ -3,7 +3,7 @@
  * Modelo para el registro de movimientos de almacén (entradas y salidas de stock).
  */
 class OperationData {
-	public static $tablename = "operation";
+	public static $tablename = TBL_PREFIX . "operation";
 	public $id;
 	public $product_id;
 	public $q;

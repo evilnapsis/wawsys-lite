@@ -3,7 +3,7 @@
  * Modelo de datos del catálogo de artículos y productos del almacén.
  */
 class ProductData {
-	public static $tablename = "product";
+	public static $tablename = TBL_PREFIX . "product";
 	public $id;
 	public $image;
 	public $barcode;

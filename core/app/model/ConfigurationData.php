@@ -3,7 +3,7 @@
  * Modelo para administrar variables y opciones globales de configuración en BD.
  */
 class ConfigurationData {
-	public static $tablename = "configuration";
+	public static $tablename = TBL_PREFIX . "configuration";
 	public $id;
 	public $short;
 	public $name;

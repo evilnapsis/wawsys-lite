@@ -4,7 +4,7 @@
  * Status: 1. Activo, 2. Mantenimiento, 3. Baja
  */
 class MeterData {
-	public static $tablename = "meter";
+	public static $tablename = TBL_PREFIX . "meter";
 	public $id;
 	public $identifier;
 	public $brand;
@@ -103,16 +103,17 @@ class MeterData {
 	 * o que estén asignados al $currentClientId indicado.
 	 */
 	public static function getAvailableForClient($currentClientId = null){
+		$clientTable = ClientData::$tablename;
 		if ($currentClientId) {
 			$sql = "select m.* from ".self::$tablename." m
-			        left join client c on c.meter_id = m.id
+			        left join {$clientTable} c on c.meter_id = m.id
 			        where (c.id is null or c.id = :client_id) and m.status = 1
 			        order by m.identifier asc";
 			$stmt = self::db()->prepare($sql);
 			$stmt->execute(['client_id' => $currentClientId]);
 		} else {
 			$sql = "select m.* from ".self::$tablename." m
-			        left join client c on c.meter_id = m.id
+			        left join {$clientTable} c on c.meter_id = m.id
 			        where c.id is null and m.status = 1
 			        order by m.identifier asc";
 			$stmt = self::db()->query($sql);

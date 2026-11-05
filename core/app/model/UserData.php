@@ -5,7 +5,7 @@
  * Kind: 1. Administrador, 2. Operador / Lector
  */
 class UserData {
-	public static $tablename = "user";
+	public static $tablename = TBL_PREFIX . "user";
 	public $id;
 	public $name;
 	public $lastname;

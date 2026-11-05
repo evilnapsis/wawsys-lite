@@ -3,7 +3,7 @@
  * Modelo legacy para diapositivas y publicaciones.
  */
 class PostData {
-	public static $tablename = "slide";
+	public static $tablename = TBL_PREFIX . "slide";
 	public $id;
 	public $title;
 	public $content;

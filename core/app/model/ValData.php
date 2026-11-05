@@ -3,7 +3,7 @@
  * Modelo para las lecturas de consumo de agua (tabla 'val').
  */
 class ValData {
-	public static $tablename = "val";
+	public static $tablename = TBL_PREFIX . "val";
 	public $id;
 	public $client_id;
 	public $meter_id;

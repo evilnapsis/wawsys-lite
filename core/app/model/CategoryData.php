@@ -3,7 +3,7 @@
  * Modelo para las categorías de consumo de agua (sustituye a la tabla 'k').
  */
 class CategoryData {
-	public static $tablename = "category";
+	public static $tablename = TBL_PREFIX . "category";
 	public $id;
 	public $name;
 	public $description;

@@ -4,7 +4,7 @@
  * Status: 1. Activo, 2. Suspendido, 3. Cancelado
  */
 class ClientData {
-	public static $tablename = "client";
+	public static $tablename = TBL_PREFIX . "client";
 	public $id;
 	public $code;
 	public $name;

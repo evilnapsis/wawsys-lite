@@ -3,7 +3,7 @@
  * Modelo para encabezados de transacciones: Ventas (operation_type_id=2) y Compras (operation_type_id=1).
  */
 class SellData {
-	public static $tablename = "sell";
+	public static $tablename = TBL_PREFIX . "sell";
 	public $id;
 	public $person_id;
 	public $user_id;

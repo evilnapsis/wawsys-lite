@@ -3,7 +3,7 @@
  * Modelo para las ubicaciones / sectores / zonas de los clientes.
  */
 class LocationData {
-	public static $tablename = "location";
+	public static $tablename = TBL_PREFIX . "location";
 	public $id;
 	public $name;
 	public $description;

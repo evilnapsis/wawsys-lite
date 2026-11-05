@@ -3,7 +3,7 @@
  * Modelo unificado para Clientes (kind=1) y Proveedores (kind=2).
  */
 class PersonData {
-	public static $tablename = "person";
+	public static $tablename = TBL_PREFIX . "person";
 	public $id;
 	public $image;
 	public $name;
